@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life</title>
+    <style>
+        * { 
+          margin: 0; padding: 0; box-sizing: border-box; 
+          
+        }
+        body {
+   background: linear-gradient(-45deg, #392A48, #6A0DAD, #1a1a40, #0a0a20);
+    background-size: 400% 400%;
+    animation: gradientMove 6s ease infinite;
+          width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: blueviolet; color: white; font-family: Arial, sans-serif; text-align: center; 
+        }
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+        .page { 
+          display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center;
+          }
+        .active {
+          display: flex; 
+          
+        }
+        h1 { 
+          font-size: 32px;
+          margin-bottom: 20px; 
+        }
+        .typing {
+    font-size: 28px;
+    font-weight: bold;
+     font-family: "Times New Roman", Times, serif;
+    border-right: 3px solid white; /* لمحاكاة مؤشر الكتابة */
+    white-space: nowrap;
+    overflow: hidden;
+    width: 0;
+    animation: typing 3s steps(30, end) forwards, blink 0.7s infinite;
+}
+
+@keyframes typing {
+    from { width: 0; 
+      
+    }
+    to { width: 100%; 
+      
+    }
+}
+
+@keyframes blink {
+    50% { 
+      border-color: transparent; 
+      
+    }
+}
+
+.intro-text {
+    font-size: 18px;
+    font-family: Arial, Helvetica, sans-serif
+    color: #F3E4F5;
+    margin-top: 15px;
+    max-width: 80%;
+    text-align: center;
+    opacity: 0;
+    animation: fadeIn 2s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; 
+      
+    }
+    to { opacity: 1; 
+      
+    }
+}
+        button { 
+          padding: 12px 24px; font-size: 18px; cursor: pointer; background-color: #F3E4F5; color: #0a0a20; border: none; border-radius: 5px; transition: 0.3s; 
+          margin-top: 40px;
+        }
+        button:hover { background-color: #e0c4e5; }
+        canvas { 
+          
+          border: 1px solid #1a1a40; background-color: #392A48; margin-bottom: 10px;
+        }
+        .controls { 
+          margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+         <!--page number 1-->
+    <div id="page1" class="page active">
+    
+      <h1 class="typing">
+"Conway's Life: A World of Patterns"
+     </h1>
+      <p class="intro-text"> "Welcome to Conway's Game of Life – where simple rules create infinite complexity!"
+      </p>
+        <button id="goToPage2">Start</button>
+    </div>
+
+       <!--page number 2-->
+    <div id="page2" class="page">
+        <h1>Conway's Game of Life</h1>
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="clearBtn">Clear</button>
+            <button id="randomBtn">Random</button>
+            <button id="gliderGunBtn">Glider Gun</button>
+            <button id="pulsarBtn">Pulsar</button>
+            <button id="pentaDecathlonBtn">PentaDecathlon</button>
+        </div>
+        <canvas id="gridCanvas">
+        </canvas>
+    </div>
+    <script>
+            document.getElementById('goToPage2').addEventListener('click', function () {
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+        });
+
+        class Game {
+            constructor(rows, cols, cellSize) {
+                this.rows = rows;
+                this.cols = cols;
+                this.cellSize = cellSize;
+                this.grid = this.createEmptyGrid();
+                this.isRunning = false;
+            }
+
+            createEmptyGrid() {
+                return Array.from({ length: this.rows }, () => Array(this.cols).fill(false));
+            }
+
+            randomize() {
+                this.grid = this.grid.map(row => row.map(() => Math.random() > 0.85));
+            }
+
+            drawPattern(pattern) {
+                pattern.forEach(([x, y]) => this.grid[y] && (this.grid[y][x] = true));
+            }
+
+            drawGliderGun() {
+                this.drawPattern([
+                    [26, 1], [24, 2], [26, 2], [14, 3], [15, 3], [22, 3], [23, 3], [36, 3], [37, 3],
+                    [13, 4], [17, 4], [22, 4], [23, 4], [36, 4], [37, 4], [2, 5], [3, 5], [12, 5], [18, 5], [22, 5], [23, 5],
+                    [2, 6], [3, 6], [12, 6], [16, 6], [18, 6], [19, 6], [24, 6], [26, 6], [12, 7], [18, 7], [26, 7],
+                    [13, 8], [17, 8], [14, 9], [15, 9]
+                ]);
+            }
+
+            drawPulsar() {
+               this.drawPattern([
+        //upper part
+        [4, 2], [5, 2], [6, 2], [10, 2], [11, 2], [12, 2],
+        [2, 4], [7, 4], [9, 4], [14, 4], [2, 5], [7, 5], [9, 5], [14, 5],
+        [2, 6], [7, 6], [9, 6], [14, 6], [4, 7], [5, 7], [6, 7], [10, 7], [11, 7], [12, 7],
+        // Lower part 
+        [4, 9], [5, 9], [6, 9], [10, 9], [11, 9], [12, 9],
+        [2, 10], [7, 10], [9, 10], [14, 10], [2, 11], [7, 11], [9, 11], [14, 11],
+        [2, 12], [7, 12], [9, 12], [14, 12], [4, 14], [5, 14], [6, 14], [10, 14], [11, 14], [12, 14]
+    ]);
+}
+            drawPentaDecathlon() {
+                this.patterns.pentaDecathlon = [
+                    [6, 2], [7, 2], [5, 3], [8, 3], [6, 4], [7, 4],
+                    [6, 5], [7, 5], [6, 6], [7, 6], [5, 7], [8, 7], [6, 8], [7, 8]
+                ];
+                this.drawPattern(this.patterns.pentaDecathlon);
+                                  }
+            countNeighbors(x, y) {
+                let count = 0;
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        const nx = (x + dx + this.cols) % this.cols;
+                        const ny = (y + dy + this.rows) % this.rows;
+                        if (this.grid[ny][nx]) count++;
+                    }
+                }
+                return count;
+            }
+            update() {
+                const newGrid = this.createEmptyGrid();
+                for (let y = 0; y < this.rows; y++) {
+                    for (let x = 0; x < this.cols; x++) {
+                        const neighbors = this.countNeighbors(x, y);
+                        const isAlive = this.grid[y][x];
+                        newGrid[y][x] = (isAlive && (neighbors === 2 || neighbors === 3)) || (!isAlive && neighbors === 3);
+                    }
+                }
+                    this.patterns.pulsar.forEach(([x, y]) => newGrid[y] && (newGrid[y][x] = true));
+                    this.patterns.pentaDecathlon.forEach(([x, y]) => newGrid[y] && (newGrid[y][x] = true));
+                    this.grid = newGrid;
+            }
+        }
+          class Renderer {
+            constructor(canvas, game) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.game = game;
+                canvas.width = game.cols * game.cellSize;
+                canvas.height = game.rows * game.cellSize;
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let y = 0; y < this.game.rows; y++) {
+                    for (let x = 0; x < this.game.cols; x++) {
+                        this.ctx.fillStyle = this.game.grid[y][x] ? '#F3E4F5' : '#0a0a20';
+                        this.ctx.fillRect(x * this.game.cellSize, y * this.game.cellSize, this.game.cellSize - 1, this.game.cellSize - 1);
+                    }
+                }
+            }
+        }
+
+               document.addEventListener('DOMContentLoaded', () => {
+            const game = new Game(50, 50, 10);
+            const canvas = document.getElementById('gridCanvas');
+            const renderer = new Renderer(canvas, game);
+            let intervalId = null;
+
+                document.getElementById('startBtn').addEventListener('click', () => {
+                game.isRunning = !game.isRunning;
+                document.getElementById('startBtn').textContent = game.isRunning ? 'Stop' : 'Start';
+                if (game.isRunning) {
+                    intervalId = setInterval(() => { game.update(); renderer.draw(); }, 300);
+                } else {
+                    clearInterval(intervalId);
+                }
+            });
+            
+           document.getElementById('clearBtn').addEventListener('click', () => { game.grid = game.createEmptyGrid(); game.patterns = { pulsar: [], pentaDecathlon: [] };
+             renderer.draw(); });
+            document.getElementById('randomBtn').addEventListener('click', () => {  game.grid = game.createEmptyGrid(); game.patterns = { pulsar: [], pentaDecathlon: [] };game.randomize(); renderer.draw(); });
+            document.getElementById('gliderGunBtn').addEventListener('click', () => { game.grid = game.createEmptyGrid(); game.patterns = { pulsar: [], pentaDecathlon: [] }; game.drawGliderGun(); renderer.draw(); });
+            document.getElementById('pulsarBtn').addEventListener('click', () => { game.grid = game.createEmptyGrid(); game.patterns = { pulsar: [], pentaDecathlon: [] }; game.drawPulsar();
+              renderer.draw(); 
+              
+            });
+            document.getElementById('pentaDecathlonBtn').addEventListener('click', () => { game.grid = game.createEmptyGrid(); game.patterns = { pulsar: [], pentaDecathlon: [] }; game.drawPentaDecathlon(); renderer.draw(); });
+
+            renderer.draw();
+        });
+        
+    </script>
+</body>
+</html>
